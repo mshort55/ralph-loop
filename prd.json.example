@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "project": "MyApp",
+  "branchName": "ralph/feature-name",
+  "description": "Bounded feature outcome",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Small outcome",
+      "description": "Complete behavioral contract",
+      "acceptanceCriteria": ["Observable criterion"],
+      "nonGoals": ["Explicit exclusion"],
+      "checks": ["npx nx run server:test"],
+      "references": ["path and relevant section"],
+      "dependencies": [],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
