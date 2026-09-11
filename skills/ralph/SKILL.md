@@ -1,11 +1,11 @@
 ---
 name: ralph
-description: Convert an approved implementation PRD into a validated multi-Story Ralph Plan.
+description: Install an approved, tracked implementation PRD as a validated multi-Story Ralph Plan.
 ---
 
 # PRD-to-Plan conversion
 
-Mechanically convert one approved, tracked implementation PRD into new ignored execution state at `<Target Repository>/.ralph/prd.json`. Do not implement Stories or run the Ralph Engine.
+Install one approved, tracked implementation PRD as new ignored execution state at `<Target Repository>/.ralph/prd.json`. Ralph code owns mechanical validation, compilation, and installation. Do not implement Stories or run the Ralph Engine.
 
 Required input:
 
@@ -15,34 +15,19 @@ Required input:
 
 Resolve every path from these supplied repositories, never from the current working directory.
 
-## Convert
+## Install
 
-1. **Validate the artifacts.** Confirm that both repositories are Git roots and the PRD is a tracked, unchanged file under `<Target Repository>/.ralph/prds/`. Read the PRD completely. Confirm its Branch equals the Target Repository's current branch. Completion: the exact approved PRD, Target, Ralph helper paths, and branch are unambiguous.
-2. **Read the contracts.** Read `<Ralph Repository>/docs/plan/README.md`, `prd-format.md`, and `story-readiness.md`. Completion: every PRD Story satisfies the shared readiness and format contracts; otherwise refuse and return it to PRD authoring.
-3. **Map executable fields only.** Create one JSON object per PRD Story in the same order. Copy project, branch, description, Story IDs, titles, descriptions, acceptance criteria, Checks, references, dependencies, and priorities exactly. Map `Dependencies: None` and `Non-goals: None` to empty arrays. Set every `passes` to `false` and every `notes` to `""`.
-
-   The Source field, source-coverage ledger, project-level non-goals, and Plan boundaries remain authoritative in the tracked PRD and are intentionally absent from executable JSON. A Plan boundary separates executable Plans; never convert deferred, manual, or conditional follow-on work into a Story.
-
-   Completion: every executable PRD Story and field has exactly one corresponding Plan value, with no invented behavior.
-4. **Create a temporary candidate outside the Target Repository.** Use `mktemp`, arrange cleanup on success or failure, and write schemaVersion `1` JSON. Completion: the candidate exists and the Target Plan is absent and untouched.
-5. **Validate with the supplied Ralph Repository:**
+1. **Resolve the artifacts.** Confirm the supplied Ralph Repository contains built `dist/` artifacts. Read the approved PRD completely and confirm it is the intended input. Completion: the PRD, Target Repository, and Ralph Repository paths are unambiguous.
+2. **Install with the supplied Ralph Repository:**
 
    ```bash
-   node <Ralph Repository>/dist/cli.js plan validate --mode conversion <candidate.json>
+   node <Ralph Repository>/dist/cli.js prd install --repo <Target Repository> --from <approved-prd.md>
    ```
 
-   Completion: validation exits zero. On failure, report the exact errors and write no Target Plan.
-6. **Check installation safety.** Confirm `<Target Repository>/.ralph/prd.json` is ignored, `.ralph` is not a symlink, and the Plan does not exist. Existing Plan state requires an explicit operator reset outside this skill. Completion: installation cannot overwrite or escape the Target Repository.
-7. **Install atomically:**
-
-   ```bash
-   node <Ralph Repository>/dist/cli.js plan install --repo <Target Repository> --from <candidate.json>
-   ```
-
-   Completion: the validated Plan exists at `<Target Repository>/.ralph/prd.json`, the temporary candidate is removed, and no tracked file changed.
+   Ralph verifies the PRD's Git state, branch, structure, coverage mappings, references, Plan invariants, and installation safety. Completion: the command exits zero, the Plan exists at `<Target Repository>/.ralph/prd.json`, and no tracked file changed. On failure, report the exact diagnostic and leave the Target Plan absent.
 
 ## Guardrails
 
-- Preserve the approved PRD and its ordering exactly.
+- Treat compiler diagnostics as PRD-authoring defects; do not repair intent during installation.
 - Leave branch creation, dependency preparation, Plan reset, engine execution, commits, and Plan progress updates to the operator or Ralph Engine.
-- Return ambiguous, oversized, unverifiable, or forward-dependent Stories to PRD authoring rather than repairing their intent during conversion.
+- Return semantic ambiguity, oversized Stories, and unverifiable behavior to PRD authoring; Ralph code handles mechanical format and relationship validation.

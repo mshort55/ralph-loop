@@ -14,12 +14,14 @@ npm run build
 npm link
 
 ralph run --repo PATH --plan PATH --iterations N
+ralph prd validate --repo TARGET --from TRACKED-PRD.md
+ralph prd install --repo TARGET --from TRACKED-PRD.md
 ralph plan validate --mode conversion PATH
 ralph plan validate --mode runtime PATH
 ralph plan install --repo TARGET --from CANDIDATE.json
 ```
 
-See [examples/plan.json](examples/plan.json) for a minimal conversion-ready Plan.
+`prd validate` mechanically audits an approved, tracked, unchanged PRD against its Target Repository. `prd install` performs the same audit, compiles its executable fields into a conversion-ready Plan, and installs that Plan atomically. See [examples/plan.json](examples/plan.json) for a minimal conversion-ready Plan. Direct JSON validation and installation remain available for tooling.
 
 `--repo`, `--plan`, and `--iterations` are required for a Run. The Plan must be `<Target Repository>/.ralph/prd.json`, and `--iterations` is the total Codex-call budget across all Stories. Unknown, duplicate, and missing arguments are rejected.
 

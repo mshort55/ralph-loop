@@ -12,13 +12,14 @@ node dist/cli.js run --repo PATH --plan PATH --iterations N
 
 ## Architecture
 
+- `src/prd/` owns mechanical Markdown PRD validation and Plan compilation.
 - `src/plan/` owns Plan validation, selection, installation, and atomic progress updates.
 - `src/run/` owns the Run state machine and Iteration prompt construction.
 - `src/system/` contains the Git, process, and lock adapters.
 - `src/main.ts` owns command dispatch; `src/cli.ts` is executable wiring only.
 - `docs/plan/` is the human-readable Plan contract; `schema/` is the machine-readable contract.
 
-Test behavior through the CLI and the `PlanStore`, `TargetRepository`, `ProcessRunner`, and `runPlan` seams. Keep coverage at 100% for statements, branches, functions, and lines.
+Test behavior through the CLI and the `PrdCompiler`, `PlanStore`, `TargetRepository`, `ProcessRunner`, and `runPlan` seams. Keep coverage at 100% for statements, branches, functions, and lines.
 
 ## Invariants
 

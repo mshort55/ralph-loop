@@ -1,5 +1,6 @@
 import { PlanStore } from "./plan/store.js";
 import type { ValidationMode } from "./plan/model.js";
+import { PrdCompiler } from "./prd/compiler.js";
 import { runPlan } from "./run/run-plan.js";
 
 export interface CliOutput {
@@ -14,7 +15,7 @@ const consoleOutput: CliOutput = {
 
 function usage(): never {
   throw new Error(
-    "Usage: ralph run --repo PATH --plan PATH --iterations N | ralph plan validate [--mode conversion|runtime] PATH | ralph plan install --repo PATH --from PATH",
+    "Usage: ralph run --repo PATH --plan PATH --iterations N | ralph plan validate [--mode conversion|runtime] PATH | ralph plan install --repo PATH --from PATH | ralph prd validate|install --repo PATH --from PATH",
   );
 }
 
@@ -78,6 +79,19 @@ async function dispatch(args: string[], output: CliOutput): Promise<void> {
       },
       { writeLine: output.stdout },
     );
+    return;
+  }
+  if (operation === "prd") {
+    if (subcommand !== "validate" && subcommand !== "install") {
+      throw new Error(`unknown PRD operation: ${subcommand ?? ""}`);
+    }
+    const values = namedArguments(rest, ["--repo", "--from"]);
+    const compiler = new PrdCompiler();
+    if (subcommand === "validate") {
+      await compiler.validate(values["--repo"]!, values["--from"]!);
+    } else {
+      await compiler.install(values["--repo"]!, values["--from"]!);
+    }
     return;
   }
   if (operation !== "plan") throw new Error(`unknown operation: ${operation}`);

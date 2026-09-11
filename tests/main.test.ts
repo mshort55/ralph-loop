@@ -99,6 +99,113 @@ describe("ralph CLI", () => {
     ).toEqual(validPlan);
   });
 
+  it("validates and installs a tracked implementation PRD", async () => {
+    const root = await mkdtemp(join(tmpdir(), "ralph-cli-prd-"));
+    roots.push(root);
+    execFileSync("git", ["init", "-q", "-b", "main", root]);
+    await mkdir(join(root, ".ralph", "prds"), { recursive: true });
+    await writeFile(
+      join(root, ".ralph", ".gitignore"),
+      "*\n!.gitignore\n!prds/\n!prds/**\n",
+    );
+    await writeFile(join(root, "design.md"), "# Design\n\n## Outcome\n");
+    await writeFile(join(root, "README.md"), "fixture\n");
+    const path = join(root, ".ralph", "prds", "fixture.md");
+    await writeFile(
+      path,
+      `# PRD: Fixture
+
+## Project
+Fixture
+
+## Branch
+main
+
+## Source
+\`design.md\`
+
+## Description
+Outcome
+
+## Source coverage
+
+| Source item | Disposition | Story or boundary |
+| --- | --- | --- |
+| design.md § Outcome: behavior | Story | US-001 |
+
+## Stories
+
+### US-001: First
+
+**Priority:** 1
+**Dependencies:** None
+
+**Description**
+First
+
+**Acceptance criteria**
+
+- [ ] Visible
+
+**Non-goals**
+
+None
+
+**Checks**
+
+- \`true\`
+
+**References**
+
+- Source: \`design.md § Outcome\`
+- Repository: \`README.md\`
+
+## Plan boundaries
+
+None
+`,
+    );
+    execFileSync("git", ["-C", root, "add", "."]);
+    execFileSync("git", [
+      "-C",
+      root,
+      "-c",
+      "user.name=Fixture",
+      "-c",
+      "user.email=fixture@test",
+      "commit",
+      "-q",
+      "-m",
+      "PRD",
+    ]);
+    const output = io();
+    expect(
+      await main(
+        ["prd", "validate", "--repo", root, "--from", path],
+        output.value,
+      ),
+    ).toBe(0);
+    expect(
+      await main(
+        ["prd", "install", "--repo", root, "--from", path],
+        output.value,
+      ),
+    ).toBe(0);
+    const installed = JSON.parse(
+      await readFile(join(root, ".ralph", "prd.json"), "utf8"),
+    ) as Plan;
+    expect(installed.project).toBe("Fixture");
+    expect(installed.userStories[0]).toMatchObject({
+      id: "US-001",
+      title: "First",
+      passes: false,
+      notes: "",
+    });
+    expect(await main(["prd", "unknown"], output.value)).toBe(1);
+    expect(output.stderr.at(-1)).toContain("unknown PRD operation");
+    expect(await main(["prd"], output.value)).toBe(1);
+  });
+
   it("runs an already-complete Plan", async () => {
     const root = await mkdtemp(join(tmpdir(), "ralph-cli-run-"));
     roots.push(root);

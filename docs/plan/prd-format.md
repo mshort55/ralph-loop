@@ -69,9 +69,11 @@ The PRD is a human-reviewed input to Ralph's mechanical Plan conversion. Preserv
 - Use continuous Story IDs in execution order: `US-001`, `US-002`, and so on.
 - Priority must match Story order. Dependencies may name only earlier Story IDs.
 - Use `None` when a Story has no dependencies or non-goals; during conversion both map to empty JSON arrays.
+- Use `None` as the complete `Plan boundaries` content when no boundaries apply.
 - Checks must be exact commands, not prose such as "run the tests."
 - Source references use the design document path and heading. Repository references are relative to the Target Repository root.
 - Every atomic normative source obligation receives a coverage-ledger row. Split clauses when they have different dispositions or independently testable behavior. Multiple rows may map to one Story, and one row may map to multiple Stories.
 - Allowed dispositions are `Story`, `Preserved non-goal`, and `Plan boundary`. Every Plan boundary must have a matching `PB-###` section.
 - A Plan boundary ends the current executable Plan. Work after that boundary requires a separately approved PRD and Plan when its trigger is satisfied.
 - The PRD contains implementation scope and verification, not iteration history or generated Ralph state.
+- Before conversion, the PRD must be tracked and unchanged under the Target Repository's `.ralph/prds/` directory. Its Branch must equal the current branch, each Story must have Source and Repository references, referenced paths must exist, and a Source reference containing ` § ` must name an existing Markdown heading.

@@ -33,6 +33,10 @@ Required nonempty strings are `project`, `branchName`, `description`, and every 
 ralph plan validate --mode conversion PATH
 ralph plan validate --mode runtime PATH
 ralph plan install --repo TARGET --from CANDIDATE.json
+ralph prd validate --repo TARGET --from TRACKED-PRD.md
+ralph prd install --repo TARGET --from TRACKED-PRD.md
 ```
 
 Conversion mode is the default. Failure identifies the invalid field or relationship and writes no Plan. Installation validates the candidate, requires `.ralph/prd.json` to be ignored, writes atomically, and refuses to replace existing execution state. Story completion is engine-owned and protects the expected Plan digest.
+
+PRD validation requires an approved Markdown PRD under the Target Repository's `.ralph/prds/` directory. The PRD must be tracked, unchanged, and name the current branch. Ralph validates its prescribed structure, coverage targets, Plan boundary fields, and Source and Repository references. Source reference headings are checked when a reference contains ` § `. PRD installation compiles the validated Markdown directly; no model performs the field mapping.
