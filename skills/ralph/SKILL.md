@@ -11,14 +11,14 @@ Required input:
 
 - the approved PRD path;
 - the Target Repository path;
-- the Ralph Repository path containing `schema/`.
+- the Ralph Repository path containing built `dist/`, `docs/plan/`, and `schema/` artifacts.
 
 Resolve every path from these supplied repositories, never from the current working directory.
 
 ## Convert
 
 1. **Validate the artifacts.** Confirm that both repositories are Git roots and the PRD is a tracked, unchanged file under `<Target Repository>/.ralph/prds/`. Read the PRD completely. Confirm its Branch equals the Target Repository's current branch. Completion: the exact approved PRD, Target, Ralph helper paths, and branch are unambiguous.
-2. **Read the contracts.** Read `<Ralph Repository>/schema/README.md`, `prd-format.md`, and `story-readiness.md`. Completion: every PRD Story satisfies the shared readiness and format contracts; otherwise refuse and return it to PRD authoring.
+2. **Read the contracts.** Read `<Ralph Repository>/docs/plan/README.md`, `prd-format.md`, and `story-readiness.md`. Completion: every PRD Story satisfies the shared readiness and format contracts; otherwise refuse and return it to PRD authoring.
 3. **Map executable fields only.** Create one JSON object per PRD Story in the same order. Copy project, branch, description, Story IDs, titles, descriptions, acceptance criteria, Checks, references, dependencies, and priorities exactly. Map `Dependencies: None` and `Non-goals: None` to empty arrays. Set every `passes` to `false` and every `notes` to `""`.
 
    The Source field, source-coverage ledger, project-level non-goals, and Plan boundaries remain authoritative in the tracked PRD and are intentionally absent from executable JSON. A Plan boundary separates executable Plans; never convert deferred, manual, or conditional follow-on work into a Story.
@@ -28,7 +28,7 @@ Resolve every path from these supplied repositories, never from the current work
 5. **Validate with the supplied Ralph Repository:**
 
    ```bash
-   python3 <Ralph Repository>/schema/validate-plan.py --mode conversion <candidate.json>
+   node <Ralph Repository>/dist/cli.js plan validate --mode conversion <candidate.json>
    ```
 
    Completion: validation exits zero. On failure, report the exact errors and write no Target Plan.
@@ -36,7 +36,7 @@ Resolve every path from these supplied repositories, never from the current work
 7. **Install atomically:**
 
    ```bash
-   python3 <Ralph Repository>/schema/write-plan.py --repo <Target Repository> --from <candidate.json>
+   node <Ralph Repository>/dist/cli.js plan install --repo <Target Repository> --from <candidate.json>
    ```
 
    Completion: the validated Plan exists at `<Target Repository>/.ralph/prd.json`, the temporary candidate is removed, and no tracked file changed.

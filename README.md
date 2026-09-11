@@ -1,58 +1,52 @@
 # Ralph
 
-The Ralph Engine is a deterministic runner: one process, one Target Repository, one Ralph Plan, fresh Codex Iterations, independent Checks, and engine-owned Story commits.
+Ralph is a deterministic TypeScript runner: one process, one Target Repository, one Ralph Plan, fresh Codex Iterations, independent Checks, and engine-owned Story commits.
 
-The Plan contract is multi-Story `schemaVersion: 1`. See [schema/README.md](schema/README.md). Do not duplicate that schema here.
+The Plan contract is multi-Story `schemaVersion: 1`; see [docs/plan/README.md](docs/plan/README.md).
 
-Canonical terms: Iteration, Plan, Story, Check, machine-complete, and invariant violation.
+## Setup and commands
 
-## Interface
-
-```bash
-./ralph.sh run --repo PATH --plan PATH --iterations N
-```
-
-`--repo`, `--plan`, and `--iterations` are required. The Plan must be `<Target Repository>/.ralph/prd.json`; both paths are explicit and canonicalized. `--iterations` is a positive integer and is the total Codex-call budget across all Stories, not a Story limit. Unknown, duplicate, or missing arguments are rejected. There are no flags for model, permissions, or timeouts.
-
-Fixed POC settings live in `ralph.sh`:
-
-- model: `gpt-5.6-luna`
-- reasoning effort: `high`
-- sandbox and approval review: automatic `workspace-write` review via `--approve-for-me`
-- inherited and ambient process capabilities: cleared before Codex starts
-- Iteration timeout: 3600 seconds
-- Check timeout: 900 seconds per Check
-
-## Plan
-
-Author Stories through the PRD skill as tracked Markdown under `.ralph/prds/`, then convert an approved PRD with the Ralph converter. The Plan is ignored mutable state at `.ralph/prd.json`. Required fields, uniqueness, dependency order, conversion `passes`/`notes` rules, and runtime validation live only in [schema/README.md](schema/README.md).
-
-`checks` are nonempty literal Target Repository-root commands. Ralph performs no substitution or inference.
-
-For each Iteration, Ralph selects the earliest incomplete Story whose dependencies have passed. A failed Codex call or failed Check consumes an Iteration and retries that Story with its existing worktree changes. A successful Story is committed, marked passed atomically, and followed by the next ready Story while budget remains.
-
-## Layout
+Ralph requires a supported Node version, Git, Bash, `setpriv`, and an authenticated Codex CLI.
 
 ```text
-ralph/
-├── ralph.sh                    deterministic loop
-├── prompt.md                   instructions for one Story
-└── tests/run-fixtures.sh       local fixture harness (fake Codex)
+npm install
+npm run build
+npm link
 
+ralph run --repo PATH --plan PATH --iterations N
+ralph plan validate --mode conversion PATH
+ralph plan validate --mode runtime PATH
+ralph plan install --repo TARGET --from CANDIDATE.json
+```
+
+See [examples/plan.json](examples/plan.json) for a minimal conversion-ready Plan.
+
+`--repo`, `--plan`, and `--iterations` are required for a Run. The Plan must be `<Target Repository>/.ralph/prd.json`, and `--iterations` is the total Codex-call budget across all Stories. Unknown, duplicate, and missing arguments are rejected.
+
+Fixed Run settings are model `gpt-5.6-luna`, high reasoning, automatic workspace review through `--approve-for-me`, a 3600-second Iteration timeout, and a 900-second timeout per Check. `setpriv` clears inherited and ambient capabilities before Codex starts.
+
+## Behavior
+
+For each Iteration, Ralph selects the earliest incomplete Story whose dependencies have passed. A failed Codex call or failed Check consumes an Iteration and retries that Story with its existing worktree changes. Successful changes are committed as `ralph(<Story ID>): <Story title>`, then the Story is marked passed atomically. An already-satisfied Story is marked passed without an empty commit.
+
+Ralph exits zero when all Stories pass. Budget exhaustion exits nonzero while preserving commits, Plan progress, logs, and uncommitted attempts. Git and Plan invariant violations stop immediately. A later clean Run resumes from Plan state and reconciles an engine commit if a process stopped between committing and updating the Plan.
+
+Checks are literal command strings and intentionally execute through `bash -lc` from the Target Repository root.
+
+## Target Repository storage
+
+```text
 Target Repository/
 ├── AGENTS.md
 └── .ralph/
-    ├── .gitignore              tracked runtime-state ignore policy
-    ├── prds/                   tracked historical PRDs
+    ├── .gitignore
+    ├── prds/
     │   └── YYYY-MM-DD-feature.md
-    ├── prd.json                ignored active Plan
-    └── runs/<timestamp-pid>/   ignored execution logs
-        ├── iteration-001-US-001.jsonl
-        ├── iteration-001-US-001-checks.log
-        └── ...
+    ├── prd.json
+    └── runs/<timestamp-pid>/
 ```
 
-The tracked `.ralph/.gitignore` keeps PRD history visible while ignoring runtime state:
+Use this tracked `.ralph/.gitignore` to retain PRD history while ignoring runtime state:
 
 ```gitignore
 *
@@ -61,35 +55,16 @@ The tracked `.ralph/.gitignore` keeps PRD history visible while ignoring runtime
 !prds/**
 ```
 
-Replace any rule that ignores the entire `.ralph/` directory; Git cannot re-include `prds/` beneath an excluded parent.
+## Development
 
-## Operator preparation
-
-Before starting a Run, the operator:
-
-1. creates and checks out the intended branch;
-2. prepares dependencies and other environment prerequisites;
-3. leaves a clean worktree and empty index;
-4. tracks `.ralph/.gitignore`, leaves `.ralph/prds/` trackable, and ignores `.ralph/prd.json` and other runtime state;
-5. writes the Plan; and
-6. confirms Checks work from the repository root.
-
-Ralph does not fetch, create branches, install dependencies, repair the environment, merge, push, or clean the worktree. A later clean Run continues from `passes` state. If a process stops after an engine commit but before its Plan update, the next Run reconciles the commit's `Ralph-Story` trailer.
-
-## Run outcome
-
-When a Story's Checks pass, Ralph stages the complete change, commits it as `ralph(<Story ID>): <Story title>`, marks that Story passed, and continues while Iterations remain. An already-satisfied Story is marked passed without an empty commit.
-
-Ralph exits zero when all Stories pass. Budget exhaustion with incomplete Stories exits nonzero while preserving completed commits, Plan progress, logs, and any uncommitted attempt. Git or Plan invariant violations stop immediately.
-
-## Fixtures
-
-```bash
-./tests/run-fixtures.sh
+```text
+npm test
+npm run test:coverage
+npm run check
 ```
 
-The harness uses temporary Git repositories and a fake `codex` executable. It does not call the network or real Codex.
+The Vitest suite uses temporary Git repositories and a TypeScript fake Codex executable. It does not call the network or real Codex. Coverage thresholds are 100% for statements, branches, functions, and lines.
 
 ## Deferred
 
-Automatic dirty-worktree recovery, remote/base handling, configurable Codex settings, Target Contracts, and other agent adapters are out of scope.
+Automatic dirty-worktree recovery, remote/base handling, configurable Codex settings, Target Contracts, and other agent adapters remain out of scope.

@@ -1,31 +1,31 @@
 # Ralph Agent Instructions
 
-Ralph is a deterministic engine in this repository. It runs one Plan against one Target Repository.
+Ralph is a deterministic TypeScript engine that runs one Plan against one Target Repository.
 
 ## Commands
 
-```bash
-./ralph.sh run --repo PATH --plan PATH --iterations N
-./tests/run-fixtures.sh
+```text
+npm run check
+npm run build
+node dist/cli.js run --repo PATH --plan PATH --iterations N
 ```
 
-## Key files
+## Architecture
 
-- `ralph.sh` — loop, Git invariants, Checks, engine-owned commit
-- `prompt.md` — Iteration instructions (implementation only; Ralph owns Git and the Plan)
-- `tests/run-fixtures.sh` — five-group fixture harness with fake Codex
+- `src/plan/` owns Plan validation, selection, installation, and atomic progress updates.
+- `src/run/` owns the Run state machine and Iteration prompt construction.
+- `src/system/` contains the Git, process, and lock adapters.
+- `src/main.ts` owns command dispatch; `src/cli.ts` is executable wiring only.
+- `docs/plan/` is the human-readable Plan contract; `schema/` is the machine-readable contract.
+
+Test behavior through the CLI and the `PlanStore`, `TargetRepository`, `ProcessRunner`, and `runPlan` seams. Keep coverage at 100% for statements, branches, functions, and lines.
 
 ## Invariants
 
-- Prepared, clean, non-detached branch before Codex runs
-- PRDs tracked under `.ralph/prds/`; Ralph Plan, locks, logs, and other runtime state ignored
-- Codex must not commit, stage, or switch branches
-- The Plan file must not change during a Run
-- One engine-owned commit only after Checks pass
+- Start on a prepared, clean, non-detached branch.
+- Track PRDs under `.ralph/prds/`; ignore the Plan, locks, logs, and other runtime state.
+- Codex does not commit, stage, switch branches, or modify the Plan.
+- Ralph creates one engine-owned commit only after Checks pass.
+- Checks remain literal Bash commands run independently from the Target Repository root.
 
-## Patterns
-
-- Fresh ephemeral Codex per Iteration; worktree is preserved between attempts
-- Checks are literal commands from the Plan, run independently from the repository root
-- Failed Checks, empty diffs, and Codex failures consume an Iteration; invariant and commit failures stop immediately
-- Do not add resume, configurable Codex flags, or multi-Story Plans to this POC
+Failed Checks, empty diffs, and Codex failures consume an Iteration. Invariant and commit failures stop immediately. A fresh ephemeral Codex process runs each Iteration while the worktree persists between attempts.

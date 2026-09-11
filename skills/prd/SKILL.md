@@ -11,18 +11,18 @@ Required input:
 
 - the approved design document path;
 - the Target Repository path;
-- the Ralph Repository path containing `schema/`;
+- the Ralph Repository path containing `docs/plan/` and `schema/`;
 - the intended branch name, or permission to propose one for approval.
 
 Resolve all paths from the supplied repositories, never from the current working directory. Before drafting, read the shared contracts from the supplied Ralph Repository:
 
-- `<Ralph Repository>/schema/story-readiness.md`
-- `<Ralph Repository>/schema/prd-format.md`
-- `<Ralph Repository>/schema/README.md`
+- `<Ralph Repository>/docs/plan/story-readiness.md`
+- `<Ralph Repository>/docs/plan/prd-format.md`
+- `<Ralph Repository>/docs/plan/README.md`
 
 ## Phase 1: draft for approval
 
-1. **Validate the inputs.** Confirm that the design document is readable, the Target and Ralph Repositories are Git repositories, the Ralph Repository contains the shared contracts, and the user treats the document as authoritative. Resolve the intended branch name or clearly label a proposed name for approval. Propose a unique date-prefixed Markdown path under `<Target Repository>/.ralph/prds/`. Confirm that the proposed PRD path is not ignored while `<Target Repository>/.ralph/prd.json` is ignored; otherwise report the repository-setup blocker and stop. Completion: all paths, the source's approval status, the branch name, and the tracked-PRD/runtime-state split are unambiguous.
+1. **Validate the inputs.** Confirm that the design document is readable, the Target and Ralph Repositories are Git repositories, and the Ralph Repository contains the shared contracts. Confirm the user treats the document as authoritative. Resolve the intended branch name or clearly label a proposed name for approval. Propose a unique date-prefixed Markdown path under `<Target Repository>/.ralph/prds/`. Confirm that the proposed PRD path is not ignored while `<Target Repository>/.ralph/prd.json` is ignored; otherwise report the repository-setup blocker and stop. Completion: all paths, the source's approval status, the branch name, and the tracked-PRD/runtime-state split are unambiguous.
 2. **Read the entire source.** Inventory every requirement, invariant, non-goal, verification expectation, conditional phase, and manual gate in a source-coverage ledger. One ledger row represents one atomic obligation that can receive one disposition; split clauses that have different Stories or boundaries, or independently testable behavior. Completion: every normative source obligation has one ledger row.
 3. **Ground the work in the Target Repository.** Read applicable `AGENTS.md` files, referenced designs, affected implementation and tests, and task configuration. Determine ownership, interfaces, existing verification, and exact root-level Check commands. Prefer repository evidence over questions. Completion: each Story can cite the source and relevant repository evidence.
 4. **Resolve material uncertainty.** Surface contradictions, missing product or architecture decisions, unresolved ownership or failure semantics, and source assumptions disproved by the repository. Ask only questions that evidence cannot settle, then stop for answers. Do not silently choose among materially different behaviors.
