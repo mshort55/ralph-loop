@@ -89,10 +89,8 @@ export async function runPlan(
       writeLine("All Stories machine-complete");
       return;
     }
-    for (const command of ["setpriv", "codex"]) {
-      if (!(await processes.available(command, env)))
-        throw new Error(`required executable not found: ${command}`);
-    }
+    if (!(await processes.available("codex", env)))
+      throw new Error("required executable not found: codex");
     if (
       (await processes.capture("codex", ["login", "status"], { env }))
         .exitCode !== 0
@@ -146,11 +144,8 @@ export async function runPlan(
       await writeFile(promptPath, prompt);
       const snapshot = await repository.snapshot(current.digest);
       const agent = await processes.toFile(
-        "setpriv",
+        "codex",
         [
-          "--inh-caps=-all",
-          "--ambient-caps=-all",
-          "codex",
           "exec",
           "--cd",
           repositoryPath,
@@ -159,7 +154,7 @@ export async function runPlan(
           DEFAULTS.model,
           "--config",
           DEFAULTS.reasoning,
-          "--approve-for-me",
+          "--dangerously-bypass-approvals-and-sandbox",
           "--json",
           "-",
         ],

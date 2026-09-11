@@ -6,7 +6,7 @@ The Plan contract is multi-Story `schemaVersion: 1`; see [docs/plan/README.md](d
 
 ## Setup and commands
 
-Ralph requires a supported Node version, Git, Bash, `setpriv`, and an authenticated Codex CLI.
+Ralph requires a supported Node version, Git, Bash, and an authenticated Codex CLI.
 
 ```text
 npm install
@@ -25,7 +25,7 @@ ralph plan install --repo TARGET --from CANDIDATE.json
 
 `--repo`, `--plan`, and `--iterations` are required for a Run. The Plan must be `<Target Repository>/.ralph/prd.json`, and `--iterations` is the total Codex-call budget across all Stories. Unknown, duplicate, and missing arguments are rejected.
 
-Fixed Run settings are model `gpt-5.6-luna`, high reasoning, automatic workspace review through `--approve-for-me`, a 3600-second Iteration timeout, and a 900-second timeout per Check. `setpriv` clears inherited and ambient capabilities before Codex starts.
+Fixed Run settings are model `gpt-5.6-luna`, high reasoning, unrestricted Codex execution through `--dangerously-bypass-approvals-and-sandbox`, a 3600-second Iteration timeout, and a 900-second timeout per Check. Codex runs with the invoking user's filesystem and network access; securing that execution environment is currently deferred.
 
 ## Behavior
 

@@ -24,15 +24,6 @@ await writeFile(
   join(state, `argv.${count}.json`),
   JSON.stringify(process.argv.slice(2)),
 );
-const status = await readFile("/proc/self/status", "utf8");
-await writeFile(
-  join(state, `caps.${count}`),
-  status
-    .split("\n")
-    .filter((line) => line.startsWith("CapInh:") || line.startsWith("CapAmb:"))
-    .join("\n") + "\n",
-);
-
 let prompt = "";
 for await (const chunk of process.stdin) prompt += chunk.toString();
 await writeFile(join(state, `prompt.${count}`), prompt);

@@ -148,11 +148,9 @@ describe("runPlan", () => {
     const args = JSON.parse(
       await readFile(join(value.state, "argv.1.json"), "utf8"),
     ) as string[];
-    expect(args).toContain("--approve-for-me");
+    expect(args).toContain("--dangerously-bypass-approvals-and-sandbox");
+    expect(args).not.toContain("--approve-for-me");
     expect(args).not.toContain("--sandbox");
-    expect(await readFile(join(value.state, "caps.1"), "utf8")).toMatch(
-      /CapInh:\s+0+\nCapAmb:\s+0+/,
-    );
   });
 
   it("retains work and logs while retrying a failed Check", async () => {
@@ -404,9 +402,9 @@ describe("runPlan", () => {
         },
       ),
     ).rejects.toThrow("required executable not found: bash");
-    class MissingSetpriv extends ProcessRunner {
+    class MissingCodex extends ProcessRunner {
       override async available(command: string, env?: NodeJS.ProcessEnv) {
-        if (command === "setpriv") return false;
+        if (command === "codex") return false;
         return super.available(command, env);
       }
     }
@@ -415,11 +413,11 @@ describe("runPlan", () => {
         { repo: value.repo, plan: value.planPath, iterations: 1 },
         {
           env: environment(value, "none"),
-          processes: new MissingSetpriv(),
+          processes: new MissingCodex(),
           writeLine: () => undefined,
         },
       ),
-    ).rejects.toThrow("required executable not found: setpriv");
+    ).rejects.toThrow("required executable not found: codex");
     const env = environment(value, "none");
     env.RALPH_FAKE_LOGIN_FAIL = "1";
     await expect(
