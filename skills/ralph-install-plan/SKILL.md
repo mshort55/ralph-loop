@@ -1,9 +1,9 @@
 ---
-name: ralph
+name: ralph-install-plan
 description: Install an approved, tracked implementation PRD as a validated multi-Story Ralph Plan.
 ---
 
-# PRD-to-Plan conversion
+# Ralph Plan Installation
 
 Install one approved, tracked implementation PRD as new ignored execution state at `<Target Repository>/.ralph/plan.json`. Ralph code owns mechanical validation, compilation, and installation. Do not implement Stories or run the Ralph Engine.
 

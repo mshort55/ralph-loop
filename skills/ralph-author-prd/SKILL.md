@@ -1,9 +1,9 @@
 ---
-name: prd
-description: Convert a user-approved design document into a reviewable, Luna-ready implementation PRD for Ralph.
+name: ralph-author-prd
+description: Author a reviewable, Luna-ready Ralph implementation PRD from a user-approved design document.
 ---
 
-# Design-to-PRD
+# Ralph PRD Authoring
 
 Convert one authoritative design document into a tracked, multi-Story implementation PRD. Do not redesign the feature, implement it, create Ralph state, or commit changes.
 
@@ -44,7 +44,7 @@ Completion means that one PRD file exists at the reported path and no other file
 
 - Treat the source as authoritative requirements, not raw material for feature redesign.
 - Do not modify the source document.
-- Do not implement code, create or edit `.ralph/`, invoke the Ralph Iteration skill, run git commits, or generate Ralph's JSON Plan.
+- Do not implement code, create or edit `.ralph/`, run the Ralph Engine, run git commits, or generate Ralph's JSON Plan.
 - Do not weaken, infer away, or silently defer a source requirement to make a Story smaller.
 - Preserve ordinary private helper names, helper visibility, and equivalent local layout as implementation choices unless the source or repository contract settles them. Do not invent a public or exported interface merely to remove incidental implementation choice.
 - If repository-specific tooling is unavailable, inspect equivalent configuration and source directly and record the evidence used.
