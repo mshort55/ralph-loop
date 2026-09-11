@@ -119,7 +119,10 @@ ${boundaries}
 `;
 }
 
-async function repository(source = prd()) {
+async function repository(
+  source = prd(),
+  design = "# Design\n\n## Outcome\n\n## Later\n",
+) {
   const root = await mkdtemp(join(tmpdir(), "ralph-prd-test-"));
   roots.push(root);
   execFileSync("git", ["init", "-q", "-b", "main", root]);
@@ -130,10 +133,7 @@ async function repository(source = prd()) {
     join(root, ".ralph", ".gitignore"),
     "*\n!.gitignore\n!prds/\n!prds/**\n",
   );
-  await writeFile(
-    join(root, "design.md"),
-    "# Design\n\n## Outcome\n\n## Later\n",
-  );
+  await writeFile(join(root, "design.md"), design);
   await writeFile(join(root, "README.md"), "fixture\n");
   const path = join(root, ".ralph", "prds", "2026-09-11-fixture.md");
   await writeFile(path, source);
@@ -447,6 +447,21 @@ describe("PrdCompiler", () => {
     await expect(
       new PrdCompiler().validate(noRepository.root, noRepository.path),
     ).rejects.toThrow("missing Repository reference");
+  });
+
+  it("accepts Source headings containing inline code", async () => {
+    const source = prd().replace(
+      "- Source: `design.md § Outcome`",
+      "- Source: `design.md § Outcome `code``",
+    );
+    const value = await repository(
+      source,
+      "# Design\n\n## Outcome `code`\n\n## Later\n",
+    );
+
+    await expect(
+      new PrdCompiler().validate(value.root, value.path),
+    ).resolves.toBeDefined();
   });
 
   it("rejects a missing primary source", async () => {

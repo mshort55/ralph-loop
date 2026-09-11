@@ -360,7 +360,8 @@ async function requireHeading(
   const headings = source
     .split(/\r?\n/)
     .map((line) => line.match(/^#{1,6} (.+?)(?: #+)?$/)?.[1])
-    .filter((value): value is string => value !== undefined);
+    .filter((value): value is string => value !== undefined)
+    .map(unwrapCode);
   if (!headings.includes(heading)) {
     problem(`${label}: heading not found: ${heading}`);
   }
