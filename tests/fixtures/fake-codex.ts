@@ -55,7 +55,7 @@ switch (scenario) {
   case "none":
     break;
   case "mutate-plan": {
-    const path = ".ralph/prd.json";
+    const path = ".ralph/plan.json";
     const plan = JSON.parse(await readFile(path, "utf8")) as {
       description: string;
     };

@@ -28,7 +28,7 @@ async function repository(): Promise<string> {
   ]);
   await writeFile(
     join(root, ".gitignore"),
-    ".ralph/prd.json\n.ralph/run.lock\n.ralph/runs/\n",
+    ".ralph/plan.json\n.ralph/run.lock\n.ralph/runs/\n",
   );
   await writeFile(join(root, "README"), "base\n");
   execFileSync("git", ["-C", root, "add", ".gitignore", "README"]);

@@ -5,7 +5,7 @@ description: Install an approved, tracked implementation PRD as a validated mult
 
 # PRD-to-Plan conversion
 
-Install one approved, tracked implementation PRD as new ignored execution state at `<Target Repository>/.ralph/prd.json`. Ralph code owns mechanical validation, compilation, and installation. Do not implement Stories or run the Ralph Engine.
+Install one approved, tracked implementation PRD as new ignored execution state at `<Target Repository>/.ralph/plan.json`. Ralph code owns mechanical validation, compilation, and installation. Do not implement Stories or run the Ralph Engine.
 
 Required input:
 
@@ -24,7 +24,7 @@ Resolve every path from these supplied repositories, never from the current work
    node <Ralph Repository>/dist/cli.js prd install --repo <Target Repository> --from <approved-prd.md>
    ```
 
-   Ralph verifies the PRD's Git state, branch, structure, coverage mappings, references, Plan invariants, and installation safety. Completion: the command exits zero, the Plan exists at `<Target Repository>/.ralph/prd.json`, and no tracked file changed. On failure, report the exact diagnostic and leave the Target Plan absent.
+   Ralph verifies the PRD's Git state, branch, structure, coverage mappings, references, Plan invariants, and installation safety. Completion: the command exits zero, the Plan exists at `<Target Repository>/.ralph/plan.json`, and no tracked file changed. On failure, report the exact diagnostic and leave the Target Plan absent.
 
 ## Guardrails
 

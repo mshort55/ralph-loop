@@ -99,7 +99,7 @@ async function fixture(): Promise<{
   await writeFile(join(repo, "README"), "base\n");
   execFileSync("git", ["-C", repo, "add", "."]);
   execFileSync("git", ["-C", repo, "commit", "-q", "-m", "init"]);
-  const planPath = join(repo, ".ralph", "prd.json");
+  const planPath = join(repo, ".ralph", "plan.json");
   await writeFile(planPath, `${JSON.stringify(twoStoryPlan(), null, 2)}\n`);
   await mkdir(bin, { recursive: true });
   await (
@@ -304,7 +304,7 @@ describe("runPlan", () => {
     await expect(
       runPlan({
         repo: empty,
-        plan: join(empty, ".ralph", "prd.json"),
+        plan: join(empty, ".ralph", "plan.json"),
         iterations: 1,
       }),
     ).rejects.toThrow();
@@ -351,7 +351,7 @@ describe("runPlan", () => {
     await expect(
       runPlan({
         repo: linked.repo,
-        plan: join(linked.repo, ".ralph", "prd.json"),
+        plan: join(linked.repo, ".ralph", "plan.json"),
         iterations: 1,
       }),
     ).rejects.toThrow("symlinked .ralph");

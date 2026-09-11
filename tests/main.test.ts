@@ -95,7 +95,7 @@ describe("ralph CLI", () => {
       ),
     ).toBe(0);
     expect(
-      JSON.parse(await readFile(join(root, ".ralph", "prd.json"), "utf8")),
+      JSON.parse(await readFile(join(root, ".ralph", "plan.json"), "utf8")),
     ).toEqual(validPlan);
   });
 
@@ -192,7 +192,7 @@ None
       ),
     ).toBe(0);
     const installed = JSON.parse(
-      await readFile(join(root, ".ralph", "prd.json"), "utf8"),
+      await readFile(join(root, ".ralph", "plan.json"), "utf8"),
     ) as Plan;
     expect(installed.project).toBe("Fixture");
     expect(installed.userStories[0]).toMatchObject({
@@ -226,7 +226,7 @@ None
     const complete = structuredClone(validPlan);
     complete.userStories[0]!.passes = true;
     complete.userStories[0]!.notes = "done";
-    const planPath = join(root, ".ralph", "prd.json");
+    const planPath = join(root, ".ralph", "plan.json");
     await writeFile(planPath, JSON.stringify(complete));
     const output = io();
     expect(

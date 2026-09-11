@@ -172,7 +172,7 @@ describe("PlanStore", () => {
   it("completes a ready Story with an expected digest", async () => {
     const root = await mkdtemp(join(tmpdir(), "ralph-plan-"));
     roots.push(root);
-    const path = join(root, "prd.json");
+    const path = join(root, "plan.json");
     const source = `${JSON.stringify(plan(), null, 2)}\n`;
     await writeFile(path, source);
     await new PlanStore().complete(path, "US-001", "done", digest(source));
@@ -186,7 +186,7 @@ describe("PlanStore", () => {
   it("refuses unsafe or invalid Story completion", async () => {
     const root = await mkdtemp(join(tmpdir(), "ralph-complete-"));
     roots.push(root);
-    const path = join(root, "prd.json");
+    const path = join(root, "plan.json");
     const source = `${JSON.stringify(plan(), null, 2)}\n`;
     await writeFile(path, source);
     const store = new PlanStore();
@@ -224,13 +224,13 @@ describe("PlanStore", () => {
   it("does not replace a Plan changed during its update", async () => {
     const root = await mkdtemp(join(tmpdir(), "ralph-race-"));
     roots.push(root);
-    const path = join(root, "prd.json");
+    const path = join(root, "plan.json");
     const source = `${JSON.stringify(plan(), null, 2)}\n`;
     await writeFile(path, source);
     const events = watch(root);
     const mutation = (async () => {
       for await (const event of events) {
-        if (event.filename?.startsWith(".prd.json.")) {
+        if (event.filename?.startsWith(".plan.json.")) {
           await writeFile(path, `${source} `);
           break;
         }

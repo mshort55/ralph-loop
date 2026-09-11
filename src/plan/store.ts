@@ -109,7 +109,7 @@ export class PlanStore {
       throw new Error(`${repo}: not a Git repository root`);
     }
     const ralphDirectory = join(repo, ".ralph");
-    const destination = join(ralphDirectory, "prd.json");
+    const destination = join(ralphDirectory, "plan.json");
     if (await isSymbolicLink(ralphDirectory)) {
       throw new Error(
         `${ralphDirectory}: symlinked .ralph directory is not allowed`,
@@ -128,15 +128,15 @@ export class PlanStore {
       "check-ignore",
       "-q",
       "--",
-      ".ralph/prd.json",
+      ".ralph/plan.json",
     ]);
     if (ignored.status !== 0) {
       throw new Error(
-        `${repo}: .ralph/prd.json is not ignored; configure Ralph runtime-state ignores before conversion`,
+        `${repo}: .ralph/plan.json is not ignored; configure Ralph runtime-state ignores before conversion`,
       );
     }
     await mkdir(ralphDirectory, { recursive: true });
-    const temporary = join(ralphDirectory, `.prd.json.${process.pid}.tmp`);
+    const temporary = join(ralphDirectory, `.plan.json.${process.pid}.tmp`);
     try {
       await writeFile(temporary, candidate, { flag: "wx" });
       await rename(temporary, destination);

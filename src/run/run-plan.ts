@@ -58,8 +58,8 @@ export async function runPlan(
   const repositoryPath = await realpath(resolve(options.repo));
   await ensureNotSymlink(join(repositoryPath, ".ralph"));
   const planPath = await realpath(resolve(options.plan));
-  if (planPath !== join(repositoryPath, ".ralph", "prd.json")) {
-    throw new Error("Plan must be <Target Repository>/.ralph/prd.json");
+  if (planPath !== join(repositoryPath, ".ralph", "plan.json")) {
+    throw new Error("Plan must be <Target Repository>/.ralph/plan.json");
   }
   for (const command of ["bash", "git"]) {
     if (!(await processes.available(command, env)))
@@ -75,7 +75,7 @@ export async function runPlan(
   }
   await repository.verifyIdentity();
   if (!(await repository.planIgnored()))
-    throw new Error(`.ralph/prd.json is not ignored in ${repositoryPath}`);
+    throw new Error(`.ralph/plan.json is not ignored in ${repositoryPath}`);
   if ((await repository.dirty()) || (await repository.indexDirty())) {
     throw new Error("worktree and index must be clean");
   }

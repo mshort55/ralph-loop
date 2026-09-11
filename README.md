@@ -23,7 +23,7 @@ ralph plan install --repo TARGET --from CANDIDATE.json
 
 `prd validate` mechanically audits an approved, tracked, unchanged PRD against its Target Repository. `prd install` performs the same audit, compiles its executable fields into a conversion-ready Plan, and installs that Plan atomically. See [examples/plan.json](examples/plan.json) for a minimal conversion-ready Plan. Direct JSON validation and installation remain available for tooling.
 
-`--repo`, `--plan`, and `--iterations` are required for a Run. The Plan must be `<Target Repository>/.ralph/prd.json`, and `--iterations` is the total Codex-call budget across all Stories. Unknown, duplicate, and missing arguments are rejected.
+`--repo`, `--plan`, and `--iterations` are required for a Run. The Plan must be `<Target Repository>/.ralph/plan.json`, and `--iterations` is the total Codex-call budget across all Stories. Unknown, duplicate, and missing arguments are rejected.
 
 Fixed Run settings are model `gpt-5.6-luna`, high reasoning, unrestricted Codex execution through `--dangerously-bypass-approvals-and-sandbox`, a 3600-second Iteration timeout, and a 900-second timeout per Check. Codex runs with the invoking user's filesystem and network access; securing that execution environment is currently deferred.
 
@@ -44,7 +44,7 @@ Target Repository/
     ├── .gitignore
     ├── prds/
     │   └── YYYY-MM-DD-feature.md
-    ├── prd.json
+    ├── plan.json
     └── runs/<timestamp-pid>/
 ```
 

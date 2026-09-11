@@ -76,7 +76,7 @@ export class TargetRepository {
 
   async planIgnored(): Promise<boolean> {
     const result = await this.git(
-      ["check-ignore", "-q", "--", ".ralph/prd.json"],
+      ["check-ignore", "-q", "--", ".ralph/plan.json"],
       true,
     );
     return result.exitCode === 0;

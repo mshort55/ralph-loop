@@ -371,7 +371,7 @@ describe("PrdCompiler", () => {
       (await compiler.validate(value.root, value.path)).userStories,
     ).toHaveLength(2);
     const installed = await compiler.install(value.root, value.path);
-    expect(installed).toBe(join(value.root, ".ralph", "prd.json"));
+    expect(installed).toBe(join(value.root, ".ralph", "plan.json"));
     expect(
       (JSON.parse(await readFile(installed, "utf8")) as { project: string })
         .project,
