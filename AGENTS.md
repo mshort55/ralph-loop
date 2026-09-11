@@ -29,4 +29,4 @@ Test behavior through the CLI and the `PrdCompiler`, `PlanStore`, `TargetReposit
 - Ralph creates one engine-owned commit only after Checks pass.
 - Checks remain literal Bash commands run independently from the Target Repository root.
 
-Failed Checks, empty diffs, and Codex failures consume an Iteration. Invariant and commit failures stop immediately. A fresh ephemeral Codex process runs each Iteration while the worktree persists between attempts.
+Failed Checks, empty diffs, and Luna session failures consume an Iteration. Invariant and commit failures stop immediately. Each Iteration uses one fresh implementation session and one fresh review-and-repair session while the worktree persists between attempts.

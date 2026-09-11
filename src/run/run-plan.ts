@@ -5,12 +5,12 @@ import { allStoriesPassed, selectReadyStory } from "../plan/validate.js";
 import { TargetRepository } from "../system/git.js";
 import { acquireRunLock, type ReleaseLock } from "../system/lock.js";
 import { ProcessRunner } from "../system/process.js";
-import { iterationPrompt } from "./prompt.js";
+import { implementationPrompt, reviewPrompt } from "./prompt.js";
 
 const DEFAULTS = {
   model: "gpt-5.6-luna",
   reasoning: 'model_reasoning_effort="high"',
-  iterationTimeoutMs: 3_600_000,
+  sessionTimeoutMs: 3_600_000,
   checkTimeoutMs: 900_000,
 };
 
@@ -27,7 +27,7 @@ export interface RunDependencies {
   plans?: PlanStore;
   lock?: (path: string) => Promise<ReleaseLock>;
   now?: () => Date;
-  iterationTimeoutMs?: number;
+  sessionTimeoutMs?: number;
   checkTimeoutMs?: number;
 }
 
@@ -134,7 +134,7 @@ export async function runPlan(
         logDirectory,
         `iteration-${tag}-${story.id}-checks.log`,
       );
-      const prompt = await iterationPrompt(
+      const prompt = await implementationPrompt(
         iteration,
         story,
         repositoryPath,
@@ -143,28 +143,13 @@ export async function runPlan(
       );
       await writeFile(promptPath, prompt);
       const snapshot = await repository.snapshot(current.digest);
-      const agent = await processes.toFile(
-        "codex",
-        [
-          "exec",
-          "--cd",
-          repositoryPath,
-          "--ephemeral",
-          "--model",
-          DEFAULTS.model,
-          "--config",
-          DEFAULTS.reasoning,
-          "--dangerously-bypass-approvals-and-sandbox",
-          "--json",
-          "-",
-        ],
-        {
-          cwd: repositoryPath,
-          env,
-          input: prompt,
-          logPath: jsonlPath,
-          timeoutMs: supplied.iterationTimeoutMs ?? DEFAULTS.iterationTimeoutMs,
-        },
+      const agent = await runCodexSession(
+        processes,
+        repositoryPath,
+        env,
+        prompt,
+        jsonlPath,
+        supplied.sessionTimeoutMs ?? DEFAULTS.sessionTimeoutMs,
       );
       await repository.assertUnchanged(
         snapshot,
@@ -173,6 +158,40 @@ export async function runPlan(
       if (agent.exitCode !== 0) {
         writeLine(
           `Codex failed (exit ${agent.exitCode}); retaining ${jsonlPath}`,
+        );
+        continue;
+      }
+      const reviewPromptPath = join(
+        logDirectory,
+        `iteration-${tag}-${story.id}-review.prompt`,
+      );
+      const reviewJsonlPath = join(
+        logDirectory,
+        `iteration-${tag}-${story.id}-review.jsonl`,
+      );
+      const review = await reviewPrompt(
+        iteration,
+        story,
+        repositoryPath,
+        planPath,
+        logDirectory,
+      );
+      await writeFile(reviewPromptPath, review);
+      const reviewer = await runCodexSession(
+        processes,
+        repositoryPath,
+        env,
+        review,
+        reviewJsonlPath,
+        supplied.sessionTimeoutMs ?? DEFAULTS.sessionTimeoutMs,
+      );
+      await repository.assertUnchanged(
+        snapshot,
+        digest(await readFile(planPath)),
+      );
+      if (reviewer.exitCode !== 0) {
+        writeLine(
+          `Codex review failed (exit ${reviewer.exitCode}); retaining ${reviewJsonlPath}`,
         );
         continue;
       }
@@ -232,6 +251,33 @@ export async function runPlan(
   } finally {
     await release();
   }
+}
+
+async function runCodexSession(
+  processes: ProcessRunner,
+  repository: string,
+  env: NodeJS.ProcessEnv,
+  prompt: string,
+  logPath: string,
+  timeoutMs: number,
+) {
+  return processes.toFile(
+    "codex",
+    [
+      "exec",
+      "--cd",
+      repository,
+      "--ephemeral",
+      "--model",
+      DEFAULTS.model,
+      "--config",
+      DEFAULTS.reasoning,
+      "--dangerously-bypass-approvals-and-sandbox",
+      "--json",
+      "-",
+    ],
+    { cwd: repository, env, input: prompt, logPath, timeoutMs },
+  );
 }
 
 async function reconcile(

@@ -6,7 +6,7 @@ A Story is ready only when every criterion below is true.
 
 - **One observable outcome:** the Story delivers one independently verifiable behavior or repository capability.
 - **Settled contract:** observable behavior, ownership, interfaces, failure semantics, and relevant invariants are explicit.
-- **Bounded change:** the outcome is achievable by `gpt-5.6-luna` with high reasoning in one Iteration without rediscovering the design.
+- **Bounded change:** the outcome is achievable by `gpt-5.6-luna` with high reasoning in one Iteration, including implementation and review, without rediscovering the design.
 - **Ordered dependencies:** every prerequisite is an earlier Story, existing repository behavior, or an explicit external precondition.
 - **Complete acceptance criteria:** criteria state observable success and important failure or edge behavior without prescribing incidental implementation details.
 - **Executable checks:** Checks are exact Target Repository-root commands that are relevant and feasible in the Iteration. Verification requiring unavailable or nondeterministic prerequisites is a Plan boundary.

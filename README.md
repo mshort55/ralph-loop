@@ -1,6 +1,6 @@
 # Ralph
 
-Ralph is a deterministic TypeScript runner: one process, one Target Repository, one Ralph Plan, fresh Codex Iterations, independent Checks, and engine-owned Story commits.
+Ralph is a deterministic TypeScript runner: one process, one Target Repository, one Ralph Plan, fresh Luna implementation and review sessions, independent Checks, and engine-owned Story commits.
 
 The Plan contract is multi-Story `schemaVersion: 1`; see [docs/plan/README.md](docs/plan/README.md).
 
@@ -37,13 +37,13 @@ ralph plan install --repo TARGET --from CANDIDATE.json
 
 `prd validate` mechanically audits an approved, tracked, unchanged PRD against its Target Repository. `prd install` performs the same audit, compiles its executable fields into a conversion-ready Plan, and installs that Plan atomically. See [examples/plan.json](examples/plan.json) for a minimal conversion-ready Plan. Direct JSON validation and installation remain available for tooling.
 
-`--repo`, `--plan`, and `--iterations` are required for a Run. The Plan must be `<Target Repository>/.ralph/plan.json`, and `--iterations` is the total Codex-call budget across all Stories. Unknown, duplicate, and missing arguments are rejected.
+`--repo`, `--plan`, and `--iterations` are required for a Run. The Plan must be `<Target Repository>/.ralph/plan.json`, and `--iterations` is the total Story-attempt budget. One Iteration contains one implementation session and one fresh review-and-repair session. Unknown, duplicate, and missing arguments are rejected.
 
-Fixed Run settings are model `gpt-5.6-luna`, high reasoning, unrestricted Codex execution through `--dangerously-bypass-approvals-and-sandbox`, a 3600-second Iteration timeout, and a 900-second timeout per Check. Codex runs with the invoking user's filesystem and network access; securing that execution environment is currently deferred.
+Fixed Run settings are model `gpt-5.6-luna`, high reasoning, unrestricted Codex execution through `--dangerously-bypass-approvals-and-sandbox`, a 3600-second timeout per Luna session, and a 900-second timeout per Check. Codex runs with the invoking user's filesystem and network access; securing that execution environment is currently deferred.
 
 ## Behavior
 
-For each Iteration, Ralph selects the earliest incomplete Story whose dependencies have passed. A failed Codex call or failed Check consumes an Iteration and retries that Story with its existing worktree changes. Successful changes are committed as `ralph(<Story ID>): <Story title>`, then the Story is marked passed atomically. An already-satisfied Story is marked passed without an empty commit.
+For each Iteration, Ralph selects the earliest incomplete Story whose dependencies have passed. One fresh Luna session implements the Story, then a second fresh Luna session reviews and repairs the implementation for production design, names, comments and documentation, and test quality. The review session also runs when implementation leaves no diff, so it can verify that the existing implementation needs no Story-scoped repair. Ralph then runs the Story Checks. A failed implementation session, review session, or Check consumes the Iteration and retries that Story with its existing worktree changes. Successful changes are committed together as `ralph(<Story ID>): <Story title>`, then the Story is marked passed atomically. An already-satisfied Story is reviewed, checked, and marked passed without an empty commit.
 
 Ralph exits zero when all Stories pass. Budget exhaustion exits nonzero while preserving commits, Plan progress, logs, and uncommitted attempts. Git and Plan invariant violations stop immediately. A later clean Run resumes from Plan state and reconciles an engine commit if a process stopped between committing and updating the Plan.
 

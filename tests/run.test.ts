@@ -143,7 +143,7 @@ describe("runPlan", () => {
         encoding: "utf8",
       }),
     ).toBe("ralph(US-002): second outcome\nralph(US-001): first outcome\n");
-    expect(await readFile(join(value.state, "count"), "utf8")).toBe("2\n");
+    expect(await readFile(join(value.state, "count"), "utf8")).toBe("4\n");
     expect(output).toContain("All Stories machine-complete");
     const args = JSON.parse(
       await readFile(join(value.state, "argv.1.json"), "utf8"),
@@ -162,11 +162,76 @@ describe("runPlan", () => {
         writeLine: () => undefined,
       },
     );
-    expect(await readFile(join(value.state, "count"), "utf8")).toBe("3\n");
-    expect(await readFile(join(value.state, "prompt.2"), "utf8")).toContain(
+    expect(await readFile(join(value.state, "count"), "utf8")).toBe("6\n");
+    expect(await readFile(join(value.state, "prompt.3"), "utf8")).toContain(
       "iteration-001-US-001-checks.log",
     );
+    expect(await readFile(join(value.state, "prompt.3"), "utf8")).toContain(
+      "iteration-001-US-001-review.jsonl",
+    );
   });
+
+  it("reviews and repairs a changed Story before Checks and commit", async () => {
+    const value = await fixture();
+    const current = twoStoryPlan();
+    current.userStories = [
+      story("US-001", "first outcome", 1, [], "grep -qx one story-1.txt"),
+    ];
+    await writeFile(value.planPath, JSON.stringify(current));
+    await runPlan(
+      { repo: value.repo, plan: value.planPath, iterations: 1 },
+      {
+        env: environment(value, "review-repair"),
+        writeLine: () => undefined,
+      },
+    );
+    expect(await readFile(join(value.state, "count"), "utf8")).toBe("2\n");
+    const prompt = await readFile(join(value.state, "prompt.2"), "utf8");
+    expect(prompt).toContain("# Ralph Review 1");
+    expect(prompt).toContain("## Production design");
+    expect(prompt).toContain("## Tests");
+    expect(await readFile(join(value.repo, "story-1.txt"), "utf8")).toBe(
+      "one\n",
+    );
+  });
+
+  it("consumes one Iteration when the review session fails", async () => {
+    const value = await fixture();
+    const output: string[] = [];
+    await expect(
+      runPlan(
+        { repo: value.repo, plan: value.planPath, iterations: 1 },
+        {
+          env: environment(value, "review-fail"),
+          writeLine: (line) => output.push(line),
+        },
+      ),
+    ).rejects.toThrow("budget exhausted");
+    expect(await readFile(join(value.state, "count"), "utf8")).toBe("2\n");
+    expect(output.some((line) => line.includes("Codex review failed"))).toBe(
+      true,
+    );
+  });
+
+  it.each([
+    ["review-mutate-plan", "Plan changed"],
+    ["review-stage", "index is not empty"],
+  ])(
+    "stops on the %s review invariant violation",
+    async (scenario, message) => {
+      const value = await fixture();
+      await expect(
+        runPlan(
+          { repo: value.repo, plan: value.planPath, iterations: 1 },
+          {
+            env: environment(value, scenario),
+            writeLine: () => undefined,
+          },
+        ),
+      ).rejects.toThrow(message);
+      expect(await readFile(join(value.state, "count"), "utf8")).toBe("2\n");
+    },
+  );
 
   it("marks an already-satisfied Story without an empty commit", async () => {
     const value = await fixture();
@@ -192,6 +257,7 @@ describe("runPlan", () => {
       }),
     ).toBe(before);
     expect(output.some((line) => line.includes("without changes"))).toBe(true);
+    expect(await readFile(join(value.state, "count"), "utf8")).toBe("2\n");
   });
 
   it.each([

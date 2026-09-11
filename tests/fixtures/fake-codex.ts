@@ -27,6 +27,8 @@ await writeFile(
 let prompt = "";
 for await (const chunk of process.stdin) prompt += chunk.toString();
 await writeFile(join(state, `prompt.${count}`), prompt);
+const review = prompt.startsWith("# Ralph Review");
+const firstStory = prompt.includes('"id":"US-001"');
 
 const args = process.argv.slice(2);
 const cdIndex = args.indexOf("--cd");
@@ -36,21 +38,57 @@ if (workingDirectory) process.chdir(workingDirectory);
 const scenario = process.env.RALPH_FAKE_SCENARIO ?? "multi";
 switch (scenario) {
   case "multi":
-    await writeFile(
-      count === 1 ? "story-1.txt" : "story-2.txt",
-      count === 1 ? "one\n" : "two\n",
-    );
+    if (!review) {
+      await writeFile(
+        firstStory ? "story-1.txt" : "story-2.txt",
+        firstStory ? "one\n" : "two\n",
+      );
+    }
     break;
   case "retry":
-    if (count === 1) await writeFile("story-1.txt", "wrong\n");
-    else if (count === 2) await writeFile("story-1.txt", "one\n");
-    else await writeFile("story-2.txt", "two\n");
+    if (!review && firstStory) {
+      await writeFile(
+        "story-1.txt",
+        prompt.startsWith("# Ralph Iteration 1") ? "wrong\n" : "one\n",
+      );
+    } else if (!review) {
+      await writeFile("story-2.txt", "two\n");
+    }
     break;
   case "one":
-    await writeFile("story-1.txt", "one\n");
+    if (!review) await writeFile("story-1.txt", "one\n");
     break;
   case "two":
-    await writeFile("story-2.txt", "two\n");
+    if (!review) await writeFile("story-2.txt", "two\n");
+    break;
+  case "review-repair":
+    await writeFile("story-1.txt", review ? "one\n" : "wrong\n");
+    break;
+  case "review-fail":
+    if (review) process.exit(42);
+    await writeFile("story-1.txt", "one\n");
+    break;
+  case "review-mutate-plan":
+    if (!review) {
+      await writeFile("story-1.txt", "one\n");
+      break;
+    }
+    {
+      const path = ".ralph/plan.json";
+      const plan = JSON.parse(await readFile(path, "utf8")) as {
+        description: string;
+      };
+      plan.description += " changed";
+      await writeFile(path, JSON.stringify(plan));
+    }
+    break;
+  case "review-stage":
+    if (!review) {
+      await writeFile("story-1.txt", "one\n");
+      break;
+    }
+    await writeFile("review-staged.txt", "staged\n");
+    execFileSync("git", ["add", "review-staged.txt"]);
     break;
   case "none":
     break;

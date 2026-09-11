@@ -4,6 +4,8 @@ PRD authoring uses [prd-format.md](prd-format.md) and [story-readiness.md](story
 
 Canonical terms: Target Repository, Run, Iteration, PRD, Ralph Plan, Story, Check, machine-complete, invariant violation.
 
+An Iteration is one complete Story attempt: one fresh Luna implementation session, one fresh review-and-repair session, and the Story Checks. Any failure consumes that one Iteration.
+
 ## Artifacts
 
 1. Approved source design — unchanged input.
