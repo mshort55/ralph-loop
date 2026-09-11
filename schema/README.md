@@ -12,7 +12,7 @@ Canonical terms: Target Repository, Run, Iteration, PRD, Ralph Plan, Story, Chec
 ## Artifacts
 
 1. Approved source design — unchanged input.
-2. Tracked derived PRD — Markdown under the Target Repository `tasks/` directory.
+2. Tracked derived PRD history — Markdown under the Target Repository `.ralph/prds/` directory.
 3. Ralph Plan — ignored mutable execution state at `.ralph/prd.json`.
 
 ## Shape
@@ -38,6 +38,6 @@ python3 schema/validate-plan.py --mode runtime PATH
 python3 schema/write-plan.py --repo TARGET --from CANDIDATE.json
 ```
 
-`--mode conversion` is the default. Failure prints the exact field or relationship and writes no Plan file. `write-plan.py` runs conversion validation, requires `/.ralph/` to be ignored, and installs `.ralph/prd.json` atomically. The converter and engine must call this validator; neither invents a second contract.
+`--mode conversion` is the default. Failure prints the exact field or relationship and writes no Plan file. `write-plan.py` runs conversion validation, requires `.ralph/prd.json` to be ignored, and installs it atomically. The converter and engine must call this validator; neither invents a second contract.
 
 `write-plan.py` creates a new Plan and refuses to replace existing execution state. `update-plan.py` is engine-owned: after Checks pass, it atomically marks exactly one ready Story passed while protecting the expected Plan hash.

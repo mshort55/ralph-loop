@@ -25,7 +25,7 @@ Fixed POC settings live in `ralph.sh`:
 
 ## Plan
 
-Author Stories through the PRD skill and convert them with the Ralph converter. The Plan is ignored mutable state at `.ralph/prd.json`. Required fields, uniqueness, dependency order, conversion `passes`/`notes` rules, and runtime validation live only in [schema/README.md](schema/README.md).
+Author Stories through the PRD skill as tracked Markdown under `.ralph/prds/`, then convert an approved PRD with the Ralph converter. The Plan is ignored mutable state at `.ralph/prd.json`. Required fields, uniqueness, dependency order, conversion `passes`/`notes` rules, and runtime validation live only in [schema/README.md](schema/README.md).
 
 `checks` are nonempty literal Target Repository-root commands. Ralph performs no substitution or inference.
 
@@ -41,13 +41,27 @@ ralph/
 
 Target Repository/
 ├── AGENTS.md
-└── .ralph/                     ignored local inputs and logs
-    ├── prd.json
-    └── runs/<timestamp-pid>/
+└── .ralph/
+    ├── .gitignore              tracked runtime-state ignore policy
+    ├── prds/                   tracked historical PRDs
+    │   └── YYYY-MM-DD-feature.md
+    ├── prd.json                ignored active Plan
+    └── runs/<timestamp-pid>/   ignored execution logs
         ├── iteration-001-US-001.jsonl
         ├── iteration-001-US-001-checks.log
         └── ...
 ```
+
+The tracked `.ralph/.gitignore` keeps PRD history visible while ignoring runtime state:
+
+```gitignore
+*
+!.gitignore
+!prds/
+!prds/**
+```
+
+Replace any rule that ignores the entire `.ralph/` directory; Git cannot re-include `prds/` beneath an excluded parent.
 
 ## Operator preparation
 
@@ -56,7 +70,7 @@ Before starting a Run, the operator:
 1. creates and checks out the intended branch;
 2. prepares dependencies and other environment prerequisites;
 3. leaves a clean worktree and empty index;
-4. ignores `/.ralph/`;
+4. tracks `.ralph/.gitignore`, leaves `.ralph/prds/` trackable, and ignores `.ralph/prd.json` and other runtime state;
 5. writes the Plan; and
 6. confirms Checks work from the repository root.
 

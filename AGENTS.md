@@ -18,7 +18,7 @@ Ralph is a deterministic engine in this repository. It runs one Plan against one
 ## Invariants
 
 - Prepared, clean, non-detached branch before Codex runs
-- `.ralph/` ignored
+- PRDs tracked under `.ralph/prds/`; Ralph Plan, locks, logs, and other runtime state ignored
 - Codex must not commit, stage, or switch branches
 - The Plan file must not change during a Run
 - One engine-owned commit only after Checks pass

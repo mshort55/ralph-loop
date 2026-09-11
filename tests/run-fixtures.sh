@@ -35,9 +35,11 @@ make_repo() {
   git -C "$repo" config user.name "Ralph Fixture"
   git -C "$repo" config user.email "ralph-fixture@example.com"
   git -C "$repo" config commit.gpgsign false
-  printf '%s\n' '/.ralph/' >"$repo/.gitignore"
+  mkdir -p "$repo/.ralph/prds"
+  printf '%s\n' '*' '!.gitignore' '!prds/' '!prds/**' >"$repo/.ralph/.gitignore"
+  printf '%s\n' '# Fixture PRD' >"$repo/.ralph/prds/prd-fixture.md"
   printf '%s\n' 'base' >"$repo/README"
-  git -C "$repo" add .gitignore README
+  git -C "$repo" add .ralph/.gitignore .ralph/prds/prd-fixture.md README
   git -C "$repo" commit -q -m init
 }
 
@@ -56,7 +58,7 @@ story() {
       acceptanceCriteria: [("The " + $title + " outcome is observable")],
       nonGoals: [],
       checks: [$check],
-      references: ["tasks/prd-fixture.md § Stories"],
+      references: [".ralph/prds/prd-fixture.md § Stories"],
       dependencies: $dependencies,
       priority: $priority,
       passes: false,
@@ -167,7 +169,7 @@ EOF
 chmod +x "$state1/hook"
 start=$(git -C "$repo" rev-parse HEAD)
 set +e
-out1=$(run_ralph "$repo" "$plan" "$state1" 1 2>&1)
+run_ralph "$repo" "$plan" "$state1" 1 >/dev/null 2>&1
 rc1=$?
 set -e
 assert "partial Run reports exhausted budget" test "$rc1" -ne 0
@@ -181,7 +183,7 @@ printf '%s\n' two >story-2.txt
 EOF
 chmod +x "$state2/hook"
 set +e
-out2=$(run_ralph "$repo" "$plan" "$state2" 1 2>&1)
+run_ralph "$repo" "$plan" "$state2" 1 >/dev/null 2>&1
 rc2=$?
 set -e
 assert "continuation Run succeeds" test "$rc2" -eq 0
@@ -350,7 +352,7 @@ assert "invalid Plan fails" test "$rc" -ne 0
 assert "invalid Plan invokes no agent" test ! -f "$state/count"
 assert "invalid Plan reports schema error" grep -q 'missing required field' <<<"$out"
 
-echo "Group 10: Plan location and ignore state are invariant"
+echo "Group 10: Plan location and runtime ignore state are invariant"
 repo="$FIXTURE_ROOT/root-plan"
 make_repo "$repo"
 plan="$repo/prd.json"
@@ -377,7 +379,7 @@ mkdir -p "$state"
 cat >"$state/hook" <<'EOF'
 #!/usr/bin/env bash
 printf '%s\n' one >story-1.txt
-: >.gitignore
+: >.ralph/.gitignore
 EOF
 chmod +x "$state/hook"
 start=$(git -C "$repo" rev-parse HEAD)
@@ -388,7 +390,8 @@ set -e
 assert "removing Plan ignore rule fails" test "$rc" -ne 0
 assert "ignore mutation is an invariant violation" grep -q 'Plan is no longer ignored' <<<"$out"
 assert "ignore mutation creates no commit" test "$(git -C "$repo" rev-parse HEAD)" = "$start"
-assert "ignored execution files remain untracked" test -z "$(git -C "$repo" ls-files .ralph)"
+assert "historical PRD remains tracked" test "$(git -C "$repo" ls-files -- .ralph/prds/prd-fixture.md)" = ".ralph/prds/prd-fixture.md"
+assert "runtime files remain untracked" test -z "$(git -C "$repo" ls-files .ralph/prd.json .ralph/run.lock .ralph/runs)"
 
 if [[ "$FAIL" -ne 0 ]]; then
   echo "FAILED: $FAIL  passed: $PASS" >&2

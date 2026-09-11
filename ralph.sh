@@ -232,7 +232,7 @@ git_c var GIT_AUTHOR_IDENT >/dev/null || die "Git identity is not configured"
 git_c var GIT_COMMITTER_IDENT >/dev/null || die "Git identity is not configured"
 
 if ! plan_ignored; then
-  die ".ralph/ is not ignored in $REPO"
+  die ".ralph/prd.json is not ignored in $REPO"
 fi
 if worktree_dirty || index_dirty; then
   die "worktree and index must be clean"

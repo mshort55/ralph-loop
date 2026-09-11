@@ -146,11 +146,17 @@ git -C "$repo" commit -q -m init
 
 rc=0
 out=$("${WRITE[@]}" --repo "$repo" --from "$tmp/ok.json" 2>&1) || rc=$?
-assert "write refuses unignored .ralph" test "$rc" -ne 0
-assert "write ignore error names .ralph" grep -Fq "/.ralph/" <<<"$out"
+assert "write refuses unignored Plan" test "$rc" -ne 0
+assert "write ignore error names Plan path" grep -Fq ".ralph/prd.json" <<<"$out"
 assert "failed write leaves no Plan" test ! -e "$repo/.ralph/prd.json"
 
-printf '%s\n' '/.ralph/' >>"$repo/.git/info/exclude"
+mkdir -p "$repo/.ralph/prds"
+printf '%s\n' '*' '!.gitignore' '!prds/' '!prds/**' >"$repo/.ralph/.gitignore"
+printf '%s\n' '# Fixture PRD' >"$repo/.ralph/prds/prd-fixture.md"
+git -C "$repo" add .ralph/.gitignore .ralph/prds/prd-fixture.md
+git -C "$repo" commit -q -m 'configure Ralph storage'
+assert "historical PRD is tracked" test "$(git -C "$repo" ls-files -- .ralph/prds/prd-fixture.md)" = ".ralph/prds/prd-fixture.md"
+assert "active Plan is ignored" git -C "$repo" check-ignore -q -- .ralph/prd.json
 assert "write installs a valid Plan" "${WRITE[@]}" --repo "$repo" --from "$tmp/ok.json"
 assert "installed Plan exists" test -f "$repo/.ralph/prd.json"
 

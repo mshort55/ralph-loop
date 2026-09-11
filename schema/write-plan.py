@@ -64,9 +64,9 @@ def main(argv: list[str]) -> int:
             print(item, file=sys.stderr)
         return 1
 
-    if not git_ignored(repo, ".ralph/prd.json") and not git_ignored(repo, ".ralph"):
+    if not git_ignored(repo, ".ralph/prd.json"):
         print(
-            f"{repo}: /.ralph/ is not ignored; add it to .git/info/exclude or .gitignore before conversion",
+            f"{repo}: .ralph/prd.json is not ignored; configure Ralph runtime-state ignores before conversion",
             file=sys.stderr,
         )
         return 1
