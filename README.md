@@ -4,6 +4,20 @@ Ralph is a deterministic TypeScript runner: one process, one Target Repository, 
 
 The Plan contract is multi-Story `schemaVersion: 1`; see [docs/plan/README.md](docs/plan/README.md).
 
+## Skills
+
+### `ralph-author-prd`
+
+Converts an approved design document into a tracked, Luna-ready implementation PRD with ordered Stories, focused Checks, source coverage, dependencies, and explicit Plan boundaries. It writes only the draft PRD and does not implement work, create a Plan, or commit changes. See [skills/ralph-author-prd/SKILL.md](skills/ralph-author-prd/SKILL.md).
+
+### `ralph-review-and-fix-prd`
+
+Audits a completed draft PRD against its approved source, requested scope, Ralph contracts, and Target Repository. It summarizes semantic readiness findings, automatically repairs established defects in the PRD, and validates the result without an approval gate or Plan installation. See [skills/ralph-review-and-fix-prd/SKILL.md](skills/ralph-review-and-fix-prd/SKILL.md).
+
+### `ralph-install-plan`
+
+Mechanically validates an approved, tracked, unchanged PRD, compiles it into a conversion-ready Ralph Plan, and installs the Plan as ignored runtime state. If validation identifies an unambiguous mechanical PRD defect, it repairs only the PRD and stops for the corrected document to be reviewed and committed. See [skills/ralph-install-plan/SKILL.md](skills/ralph-install-plan/SKILL.md).
+
 ## Setup and commands
 
 Ralph requires a supported Node version, Git, Bash, and an authenticated Codex CLI.
